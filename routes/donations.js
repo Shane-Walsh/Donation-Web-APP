@@ -24,4 +24,23 @@ router.findOne = function(req, res) {
         res.json({ message: 'Donation NOT Found!'});
 }
 
+router.addDonation = function(req, res) {
+    //Add a new donation to our list
+    var id = Math.floor((Math.random() * 1000000) + 1); //Randomly generate an id
+    // parameters to store
+    // id (for id)
+    // req.body.paymenttype (for paymenttype)
+    // req.body.amount (for amount)
+    // 0 (for upvotes)
+    var currentSize = donations.length;
+
+    donations.push({"id":id,"paymenttype":req.body.paymenttype,"amount": req.body.amount,"upvotes":0});
+
+    if((currentSize + 1) == donations.length)
+        res.json({ message: 'Donation Added!'});
+    else
+        res.json({ message: 'Donation NOT Added!'});
+}
+
+
 module.exports = router;

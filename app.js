@@ -27,6 +27,7 @@ app.use('/', index);
 app.use('/users', users);
 app.get('/donations', donations.findAll);
 app.get('/donations/:id', donations.findOne);
+app.post('/donations', donations.addDonation);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
