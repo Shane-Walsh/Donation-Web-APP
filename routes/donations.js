@@ -42,5 +42,11 @@ router.addDonation = function(req, res) {
         res.json({ message: 'Donation NOT Added!'});
 }
 
+router.incrementUpvotes = function(req, res) {
+    //Add 1 to upvotes property of the selected donation based on its id
+    var donation = getByValue(donations,req.params.id);
+    donation.upvotes += 1;
+}
+
 
 module.exports = router;
