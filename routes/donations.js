@@ -48,5 +48,19 @@ router.incrementUpvotes = function(req, res) {
     donation.upvotes += 1;
 }
 
+router.deleteDonation = function(req, res) {
+    //Delete the selected donation based on its id
+    var donation = getByValue(donations,req.params.id);
+    var index = donations.indexOf(donation);
+
+    var currentSize = donations.length;
+    donations.splice(index, 1);
+
+    if((currentSize - 1) == donations.length)
+        res.json({ message: 'Donation Deleted!'});
+    else
+        res.json({ message: 'Donation NOT Deleted!'});
+}
+
 
 module.exports = router;
