@@ -1,6 +1,9 @@
-var donations = [
-    {id: 1000000, paymenttype: 'PayPal', amount: 1600, upvotes: 1},
-    {id: 1000001, paymenttype: 'Direct', amount: 1100, upvotes: 2}
-];
+var mongoose = require('mongoose');
 
-module.exports = donations;
+var DonationSchema = new mongoose.Schema({
+    paymenttype: String,
+    amount: Number,
+    upvotes: {type: Number, default: 0}
+});
+
+module.exports = mongoose.model('Donation', DonationSchema);

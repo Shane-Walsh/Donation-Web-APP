@@ -1,6 +1,19 @@
 var donations = require('../models/donations');
 var express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
+var Donation = require('../models/donations');
+
+mongoose.connect('mongodb://localhost:27017/donationsdb');
+
+var db = mongoose.connection;
+
+db.on('error', function (err) {
+    console.log('connection error', err);
+});
+db.once('open', function () {
+    console.log('connected to database');
+});
 
 function getByValue(arr, id) {
 
@@ -10,57 +23,69 @@ function getByValue(arr, id) {
 }
 
 router.findAll = function(req, res) {
-    // Return a JSON representation of our list
-    res.json(donations);
+    // Use the Donation model to find all donations
+    Donation.find(function(err, donations) {
+        if (err)
+            res.send(err);
+
+        res.json(donations);
+    });
 }
 
 router.findOne = function(req, res) {
 
-    var donation = getByValue(donations,req.params.id);
-
-    if(donation != null)
-        res.json(donation);
-    else
-        res.json({ message: 'Donation NOT Found!'});
+    // Use the Donation model to find a single donation
+    Donation.find({ "_id" : req.params.id },function(err, donation) {
+        if (err)
+            res.json({ message: 'Donation NOT Found!', errmsg : err } );
+        else
+            res.json(donation);
+    });
 }
 
 router.addDonation = function(req, res) {
-    //Add a new donation to our list
-    var id = Math.floor((Math.random() * 1000000) + 1); //Randomly generate an id
-    // parameters to store
-    // id (for id)
-    // req.body.paymenttype (for paymenttype)
-    // req.body.amount (for amount)
-    // 0 (for upvotes)
-    var currentSize = donations.length;
 
-    donations.push({"id":id,"paymenttype":req.body.paymenttype,"amount": req.body.amount,"upvotes":0});
+    var donation = new Donation();
 
-    if((currentSize + 1) == donations.length)
-        res.json({ message: 'Donation Added!'});
-    else
-        res.json({ message: 'Donation NOT Added!'});
+    donation.paymenttype = req.body.paymenttype;
+    donation.amount = req.body.amount;
+
+    console.log('Adding donation: ' + JSON.stringify(donation));
+
+    // Save the donation and check for errors
+    donation.save(function(err) {
+        if (err)
+            res.send(err);
+
+        res.json({ message: 'Donation Added!', data: donation });
+    });
 }
 
 router.incrementUpvotes = function(req, res) {
-    //Add 1 to upvotes property of the selected donation based on its id
-    var donation = getByValue(donations,req.params.id);
-    donation.upvotes += 1;
+
+    Donation.findById(req.params.id, function(err,donation) {
+        if (err)
+            res.send(err);
+        else {
+            donation.upvotes += 1;
+            donation.save(function (err) {
+                if (err)
+                    res.send(err);
+                else
+                    res.json({ message: 'Donation Upvoted!', data: donation });
+            });
+        }
+    });
 }
 
 router.deleteDonation = function(req, res) {
-    //Delete the selected donation based on its id
-    var donation = getByValue(donations,req.params.id);
-    var index = donations.indexOf(donation);
 
-    var currentSize = donations.length;
-    donations.splice(index, 1);
-
-    if((currentSize - 1) == donations.length)
-        res.json({ message: 'Donation Deleted!'});
-    else
-        res.json({ message: 'Donation NOT Deleted!'});
+    Donation.findByIdAndRemove(req.params.id, function(err) {
+        if (err)
+            res.send(err);
+        else
+            res.json({ message: 'Donation Deleted!'});
+    });
 }
-
 
 module.exports = router;
